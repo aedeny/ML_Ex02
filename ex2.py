@@ -1,5 +1,3 @@
-import sys
-
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as sc
@@ -9,15 +7,6 @@ from matplotlib.legend_handler import HandlerLine2D
 def softmax(z):
     e_z = np.exp(z - np.max(z))
     return e_z / e_z.sum()
-
-
-def cross_entropy(yhat, y):
-    return - np.sum(y * np.log(yhat + 1e-6))
-
-
-def sgd(params, learning_rate):
-    for param in params:
-        param[:] = param - learning_rate * param.grad
 
 
 class LogisticRegression(object):
@@ -43,9 +32,8 @@ class LogisticRegression(object):
                 z = np.dot(x, self.w) + self.b
 
                 # Predicts
-                y_hat = np.argmax(softmax(z)) + 1
-
                 current_softmax = softmax(z)
+                y_hat = np.argmax(current_softmax) + 1
                 if y != y_hat:
                     for a in range(3):
                         if a + 1 == y:
@@ -55,29 +43,32 @@ class LogisticRegression(object):
                             self.w[0, a] -= lr * current_softmax[0, a] * x
                             self.b[0, a] -= lr * current_softmax[0, a]
 
+    def predict(self, x_val):
+        return np.argmax(softmax(np.dot(x_val, self.w) + self.b)) + 1
+
     def draw_plot(self):
         x_values = np.arange(0, 10, 0.1).tolist()
         pdf_y_values = []
         model_y_values = []
+
+        # Creates y values
         for val in x_values:
             pdf_y_values.append(sc.norm(2, 1).pdf(val) / (sc.norm(2, 1).pdf(val) + sc.norm(4, 1).pdf(val) +
                                                           sc.norm(6, 1).pdf(val)))
             model_y_values.append(softmax(np.dot(self.w, val) + self.b).tolist()[0][0])
 
-        print(pdf_y_values)
-        print(model_y_values)
+        # Sets graph's settings
         fig = plt.figure(0)
-        fig.canvas.set_window_title('normal distribution VS logistic regression')
-        plt.axis([0, 10, 0, 2])
-        plt.xlabel('X')
-        plt.ylabel('Probability')
+        fig.canvas.set_window_title('Normal Distribution vs. Logistic Regression')
+        plt.title("Normal Distribution vs. Logistic Regression")
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-
+        plt.axis([0, 10, 0, 1.5])
+        plt.xlabel('x')
+        plt.ylabel('Probability')
         normal_graph, = plt.plot(x_values, pdf_y_values, 'r--', label="Normal Distribution")
-
         plt.plot(x_values, model_y_values, label="Logistic Regression")
-
         plt.legend(handler_map={normal_graph: HandlerLine2D(numpoints=4)})
+
         plt.show()
 
 
@@ -99,7 +90,6 @@ if __name__ == '__main__':
 
     # Constructs the Logistic Regression classifier
     classifier = LogisticRegression(x, y, 1, 3)
+
     classifier.train()
     classifier.draw_plot()
-    # Tests model
-    x = np.array([3.23149])
