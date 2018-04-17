@@ -34,6 +34,8 @@ class LogisticRegression(object):
                 # Predicts
                 current_softmax = softmax(z)
                 y_hat = np.argmax(current_softmax) + 1
+
+                # Updates w and b
                 if y != y_hat:
                     for a in range(3):
                         if a + 1 == y:
